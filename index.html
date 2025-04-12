@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>디마니코 오늘 HOT 뉴스</title>
+  <title>김성훈 실시간 뉴스</title>
   <style>
     body {
       font-family: 'Pretendard', 'Arial', sans-serif;
@@ -86,15 +86,16 @@
       position: absolute;
       top: -12px;
       right: -12px;
-      background: #ff4081;
+      background: #2e2e2e;
       color: white;
       padding: 4px 10px;
       font-size: 12px;
       border-radius: 50px;
-      box-shadow: 0 0 12px rgba(255, 64, 129, 0.7);
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
       animation: glow 1s ease-in-out infinite alternate;
       opacity: 1;
       transition: opacity 1s ease;
+      cursor: pointer;
     }
 
     .fade-out {
@@ -108,13 +109,25 @@
   </style>
 </head>
 <body>
-  <h1>🔥 오늘의 HOT 뉴스</h1>
+  <h1>📰 김성훈 실시간 뉴스</h1>
   <div class="news-container" id="news"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREtGkXdYpNmlEf8pc1p6vpOoOmmhRC1plwNbWGCz-soto3fBDACuaN5Agm9tCGx2wZNxJnJM5ycvNR/pub?gid=1064508082&single=true&output=csv";
     let previousTitles = new Set();
+
+    function parseTime(text) {
+      const now = new Date();
+      const [hh, mm] = text.split(":");
+      if (!hh || !mm) return null;
+
+      const t = new Date(now);
+      t.setHours(parseInt(hh));
+      t.setMinutes(parseInt(mm));
+      t.setSeconds(0);
+      return t;
+    }
 
     async function loadNews() {
       const res = await fetch(SHEET_URL);
@@ -136,6 +149,7 @@
             let headlineHtml = "";
             let contentHtml = "";
             let isNew = false;
+            let firstTimeStr = "";
 
             for (let key in row) {
               const value = row[key].trim();
@@ -147,6 +161,8 @@
                   isNew = true;
                   newTitles.add(value);
                 }
+              } else if (key.includes("최초") && key.includes("시간")) {
+                firstTimeStr = value;
               } else if (key.includes("링크") && value.startsWith("http")) {
                 contentHtml += `<a class="link-button" href="${value}" target="_blank">📰 뉴스 보기</a>`;
               } else {
@@ -156,17 +172,25 @@
 
             card.innerHTML = headlineHtml + contentHtml;
 
-            if (isNew) {
+            const firstTime = parseTime(firstTimeStr);
+            const now = new Date();
+            const isWithin30Minutes = firstTime && (now - firstTime < 30 * 60 * 1000);
+
+            if (isNew && isWithin30Minutes) {
               const badge = document.createElement("div");
               badge.className = "new-badge";
               badge.textContent = "🔔 새로 들어왔어요!";
               card.appendChild(badge);
 
-              // 1분 후 fade-out 후 제거
               setTimeout(() => {
                 badge.classList.add("fade-out");
-                setTimeout(() => badge.remove(), 1000); // fade-out 완료 후 제거
+                setTimeout(() => badge.remove(), 1000);
               }, 60000);
+
+              badge.addEventListener("click", () => {
+                badge.classList.add("fade-out");
+                setTimeout(() => badge.remove(), 1000);
+              });
             }
 
             container.appendChild(card);
@@ -178,7 +202,7 @@
     }
 
     loadNews();
-    setInterval(loadNews, 60000); // 1분마다 자동 갱신
+    setInterval(loadNews, 60000);
   </script>
 </body>
 </html>
