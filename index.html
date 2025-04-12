@@ -77,41 +77,44 @@
   <h1>🔥 오늘의 HOT 뉴스</h1>
   <div class="news-container" id="news"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREtGkXdYpNmlEf8pc1p6vpOoOmmhRC1plwNbWGCz-soto3fBDACuaN5Agm9tCGx2wZNxJnJM5ycvNR/pub?gid=1064508082&single=true&output=csv";
 
     async function loadNews() {
       const res = await fetch(SHEET_URL);
-      const text = await res.text();
-      const rows = text.trim().split("\n").map(r => r.split(",").map(cell => cell.replace(/^"|"$/g, "")));
-      const container = document.getElementById("news");
+      const csvText = await res.text();
 
-      const headers = rows[0];
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          const data = results.data;
+          const container = document.getElementById("news");
 
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        if (row.length < 4 || !row[1]?.trim()) continue;
+          data.forEach(row => {
+            const card = document.createElement("div");
+            card.className = "news-card";
 
-        const card = document.createElement("div");
-        card.className = "news-card";
+            let contentHtml = "";
+            for (let key in row) {
+              const value = row[key].trim();
+              if (!value) continue;
 
-        let contentHtml = "";
-        for (let j = 0; j < headers.length && j < row.length; j++) {
-          const key = headers[j];
-          const value = row[j];
+              if (key.includes("제목")) {
+                contentHtml += `<div class="headline">${value}</div>`;
+              } else if (key.includes("링크") && value.startsWith("http")) {
+                contentHtml += `<a class="link-button" href="${value}" target="_blank">🔗 링크 바로가기</a>`;
+              } else {
+                contentHtml += `<p><strong>${key}:</strong> ${value}</p>`;
+              }
+            }
 
-          if (key.includes("제목")) {
-            contentHtml += `<div class="headline">${value}</div>`;
-          } else if (key.includes("링크") && value.startsWith("http")) {
-            contentHtml += `<a class="link-button" href="${value}" target="_blank">🔗 링크 바로가기</a>`;
-          } else {
-            contentHtml += `<p><strong>${key}:</strong> ${value}</p>`;
-          }
+            card.innerHTML = contentHtml;
+            container.appendChild(card);
+          });
         }
-
-        card.innerHTML = contentHtml;
-        container.appendChild(card);
-      }
+      });
     }
 
     loadNews();
