@@ -7,8 +7,8 @@
   <title>디마니코 오늘 HOT 뉴스</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      background-color: #1e1e1e;
+      font-family: 'Pretendard', 'Arial', sans-serif;
+      background-color: #1a1a1a;
       color: #f1f1f1;
       margin: 0;
       padding: 24px;
@@ -16,28 +16,42 @@
 
     h1 {
       text-align: center;
-      font-size: 28px;
-      margin-bottom: 20px;
+      font-size: 30px;
+      margin-bottom: 30px;
       color: #ffffff;
     }
 
     .news-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 20px;
+      gap: 24px;
       justify-content: center;
     }
 
     .news-card {
-      background: #2c2c2c;
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      background: #2b2b2b;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
       display: flex;
       flex-direction: column;
       max-width: 360px;
       width: 100%;
       box-sizing: border-box;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .news-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+    }
+
+    .headline {
+      font-size: 17px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 12px;
+      line-height: 1.4;
     }
 
     .news-card p {
@@ -48,28 +62,21 @@
       white-space: pre-line;
     }
 
-    .news-card .headline {
-      font-size: 16px;
-      font-weight: bold;
-      margin: 6px 0;
-      color: #ffffff;
-    }
-
     .link-button {
-      margin-top: 12px;
-      padding: 8px 12px;
-      background: #3a8ef6;
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: linear-gradient(135deg, #4c8dff, #2a6be0);
       color: #fff;
       text-align: center;
       text-decoration: none;
-      border-radius: 8px;
-      font-size: 13px;
+      border-radius: 10px;
+      font-size: 14px;
       font-weight: bold;
       transition: background 0.2s ease;
     }
 
     .link-button:hover {
-      background: #297be0;
+      background: linear-gradient(135deg, #3a7be7, #1f5cd4);
     }
   </style>
 </head>
@@ -96,13 +103,15 @@
             const card = document.createElement("div");
             card.className = "news-card";
 
+            let headlineHtml = "";
             let contentHtml = "";
+
             for (let key in row) {
               const value = row[key].trim();
               if (!value) continue;
 
               if (key.includes("제목")) {
-                contentHtml += `<div class="headline">${value}</div>`;
+                headlineHtml = `<div class="headline">${value}</div>`;
               } else if (key.includes("링크") && value.startsWith("http")) {
                 contentHtml += `<a class="link-button" href="${value}" target="_blank">🔗 링크 바로가기</a>`;
               } else {
@@ -110,7 +119,7 @@
               }
             }
 
-            card.innerHTML = contentHtml;
+            card.innerHTML = headlineHtml + contentHtml;
             container.appendChild(card);
           });
         }
