@@ -163,6 +163,7 @@
                 }
               } else if (key.includes("최초") && key.includes("시간")) {
                 firstTimeStr = value;
+                contentHtml += `<p><strong>${key}:</strong> ${value}</p>`;
               } else if (key.includes("링크") && value.startsWith("http")) {
                 contentHtml += `<a class="link-button" href="${value}" target="_blank">📰 뉴스 보기</a>`;
               } else {
