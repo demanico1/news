@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>디마니코 오늘 HOT 뉴스</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #1e1e1e;
+      color: #f1f1f1;
+      margin: 0;
+      padding: 24px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #ffffff;
+    }
+
+    .news-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .news-card {
+      background: #2c2c2c;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .news-card h3 {
+      font-size: 16px;
+      margin: 0 0 8px;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .news-card p {
+      font-size: 14px;
+      margin: 4px 0;
+      color: #ccc;
+    }
+
+    .source {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .link-button {
+      margin-top: 12px;
+      padding: 8px 12px;
+      background: #3a8ef6;
+      color: #fff;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: bold;
+      transition: background 0.2s ease;
+    }
+
+    .link-button:hover {
+      background: #297be0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔥 오늘의 HOT 뉴스</h1>
+  <div class="news-container" id="news"></div>
+
+  <script>
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREtGkXdYpNmlEf8pc1p6vpOoOmmhRC1plwNbWGCz-soto3fBDACuaN5Agm9tCGx2wZNxJnJM5ycvNR/pub?gid=1064508082&single=true&output=csv";
+
+    async function loadNews() {
+      const res = await fetch(SHEET_URL);
+      const text = await res.text();
+      const rows = text.trim().split("\n").map(r => r.split(","));
+      const container = document.getElementById("news");
+
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (row.length < 4 || !row[1]?.trim()) continue;
+
+        const [time, channel, title, url, stock] = row.map(cell => cell.replace(/^"|"$/g, ""));
+
+        const card = document.createElement("div");
+        card.className = "news-card";
+        card.innerHTML = `
+          <h3>${title}</h3>
+          <p>${stock || ""}</p>
+          <div class="source">${channel} · ${time}</div>
+          <a href="${url}" target="_blank" class="link-button">🔗 링크 바로가기</a>
+        `;
+        container.appendChild(card);
+      }
+    }
+
+    loadNews();
+  </script>
+</body>
+</html>
