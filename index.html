@@ -3,80 +3,90 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>디마니코 최신 뉴스</title>
+  <title>디마니코 뉴스</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 1rem;
+      font-family: 'Arial', sans-serif;
       background-color: #f9f9f9;
+      padding: 20px;
     }
     h1 {
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
-      color: #222;
+      text-align: center;
+      margin-bottom: 30px;
     }
-    .card {
-      background-color: white;
-      border-radius: 1rem;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    .news-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
     }
-    .card img {
+    .news-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 16px;
+      transition: transform 0.2s ease;
+    }
+    .news-card:hover {
+      transform: translateY(-4px);
+    }
+    .news-card img {
       width: 100%;
-      height: auto;
-      border-radius: 0.5rem;
-      margin-top: 0.5rem;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
     }
-    .title {
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-      color: #333;
+    .news-card h3 {
+      margin-top: 12px;
+      font-size: 18px;
     }
-    a {
-      color: inherit;
-      text-decoration: none;
+    .news-card p {
+      font-size: 14px;
+      color: #444;
     }
-    a:hover {
-      text-decoration: underline;
+    .source {
+      font-size: 12px;
+      color: #888;
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
-  <h1>📰 디마니코 최신 뉴스</h1>
-  <div id="news-container">로딩 중...</div>
+  <h1>📰 디마니코 HOT 뉴스</h1>
+  <div class="news-container" id="news"></div>
 
   <script>
-    fetch("https://raw.githubusercontent.com/demanico1/image-cache/main/image_cache.json")
-      .then(res => res.json())
-      .then(data => {
-        const container = document.getElementById("news-container");
-        container.innerHTML = "";
-        for (const [title, { image, link }] of Object.entries(data)) {
-          const card = document.createElement("div");
-          card.className = "card";
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQgOePwNH5_v3vEvXTYlnA-5iEOsjYVoPXZAEYz_0RxJk0IfG8MCaAaYiYBhuCtdkMP6mfrq0vFzTWp/pub?gid=1064508082&single=true&output=tsv";
 
-          const anchor = document.createElement("a");
-          anchor.href = link;
-          anchor.target = "_blank";
+    async function fetchSheetData() {
+      const res = await fetch(SHEET_URL);
+      const text = await res.text();
+      const rows = text.trim().split("\n").map(row => row.split("\t"));
 
-          const titleElem = document.createElement("div");
-          titleElem.className = "title";
-          titleElem.textContent = title;
+      const newsList = document.getElementById("news");
+      const headers = rows[0];
 
-          const img = document.createElement("img");
-          img.src = image;
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (row.length < 4 || !row[1]?.trim()) continue; // 빈 줄 무시
+        const [time, channel, title, url, stock, img] = row;
 
-          anchor.appendChild(titleElem);
-          anchor.appendChild(img);
-          card.appendChild(anchor);
-          container.appendChild(card);
-        }
-      })
-      .catch(err => {
-        document.getElementById("news-container").textContent = "뉴스를 불러오는 데 실패했습니다.";
-        console.error(err);
-      });
+        const card = document.createElement("div");
+        card.className = "news-card";
+
+        const safeImg = img && img.startsWith("http") ? img : "https://via.placeholder.com/320x180?text=No+Image";
+        card.innerHTML = `
+          <a href="${url}" target="_blank" style="text-decoration: none; color: inherit;">
+            <img src="${safeImg}" alt="뉴스 이미지">
+            <h3>${title}</h3>
+            <p>${stock || ""}</p>
+            <div class="source">${channel} · ${time}</div>
+          </a>
+        `;
+        newsList.appendChild(card);
+      }
+    }
+
+    fetchSheetData();
   </script>
 </body>
 </html>
