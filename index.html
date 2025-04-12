@@ -65,20 +65,18 @@
     .link-button {
       margin-top: 14px;
       padding: 10px 14px;
-      backdrop-filter: blur(12px);
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #ffffff;
+      background: linear-gradient(135deg, #4c8dff, #2a6be0);
+      color: #fff;
       text-align: center;
       text-decoration: none;
-      border-radius: 12px;
+      border-radius: 10px;
       font-size: 14px;
       font-weight: bold;
       transition: background 0.2s ease;
     }
 
     .link-button:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: linear-gradient(135deg, #3a7be7, #1f5cd4);
     }
   </style>
 </head>
@@ -93,14 +91,13 @@
     async function loadNews() {
       const res = await fetch(SHEET_URL);
       const csvText = await res.text();
-      const container = document.getElementById("news");
-      container.innerHTML = "";
 
       Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
           const data = results.data;
+          const container = document.getElementById("news");
 
           data.forEach(row => {
             const card = document.createElement("div");
@@ -130,7 +127,6 @@
     }
 
     loadNews();
-    setInterval(loadNews, 60000); // 1분마다 자동 갱신
   </script>
 </body>
 </html>
