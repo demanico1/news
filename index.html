@@ -9,6 +9,7 @@
       font-family: 'Arial', sans-serif;
       background-color: #f0f2f5;
       padding: 24px;
+      margin: 0;
     }
     h1 {
       text-align: center;
@@ -56,20 +57,21 @@
   <div class="news-container" id="news"></div>
 
   <script>
-    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQgOePwNH5_v3vEvXTYlnA-5iEOsjYVoPXZAEYz_0RxJk0IfG8MCaAaYiYBhuCtdkMP6mfrq0vFzTWp/pub?gid=1064508082&single=true&output=tsv";
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREtGkXdYpNmlEf8pc1p6vpOoOmmhRC1plwNbWGCz-soto3fBDACuaN5Agm9tCGx2wZNxJnJM5ycvNR/pub?gid=1064508082&single=true&output=csv";
 
     async function loadNews() {
       const res = await fetch(SHEET_URL);
       const text = await res.text();
-      const rows = text.trim().split("\n").map(r => r.split("\t"));
-      const container = document.getElementById("news");
+      const rows = text.trim().split("\n").map(r => r.split(","));
 
+      const container = document.getElementById("news");
       const headers = rows[0];
+
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
         if (row.length < 4 || !row[1]?.trim()) continue;
 
-        const [time, channel, title, url, stock, img] = row;
+        const [time, channel, title, url, stock, img] = row.map(cell => cell.replace(/^"|"$/g, "")); // 따옴표 제거
         const safeImg = img && img.startsWith("http") ? img : "https://via.placeholder.com/320x180?text=No+Image";
 
         const card = document.createElement("div");
