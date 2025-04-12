@@ -39,6 +39,7 @@
       width: 100%;
       box-sizing: border-box;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
     }
 
     .news-card:hover {
@@ -80,6 +81,30 @@
     .link-button:hover {
       background: rgba(255, 255, 255, 0.2);
     }
+
+    .new-badge {
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      background: #ff4081;
+      color: white;
+      padding: 4px 10px;
+      font-size: 12px;
+      border-radius: 50px;
+      box-shadow: 0 0 12px rgba(255, 64, 129, 0.7);
+      animation: glow 1s ease-in-out infinite alternate;
+      opacity: 1;
+      transition: opacity 1s ease;
+    }
+
+    .fade-out {
+      opacity: 0 !important;
+    }
+
+    @keyframes glow {
+      from { opacity: 0.8; }
+      to { opacity: 1; transform: scale(1.05); }
+    }
   </style>
 </head>
 <body>
@@ -89,6 +114,7 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREtGkXdYpNmlEf8pc1p6vpOoOmmhRC1plwNbWGCz-soto3fBDACuaN5Agm9tCGx2wZNxJnJM5ycvNR/pub?gid=1064508082&single=true&output=csv";
+    let previousTitles = new Set();
 
     async function loadNews() {
       const res = await fetch(SHEET_URL);
@@ -100,13 +126,16 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          const data = results.data; // 시트에 있는 순서 그대로 유지
+          const data = results.data;
+          const newTitles = new Set();
+
           data.forEach(row => {
             const card = document.createElement("div");
             card.className = "news-card";
 
             let headlineHtml = "";
             let contentHtml = "";
+            let isNew = false;
 
             for (let key in row) {
               const value = row[key].trim();
@@ -114,6 +143,10 @@
 
               if (key.includes("제목")) {
                 headlineHtml = `<div class="headline">${value}</div>`;
+                if (!previousTitles.has(value)) {
+                  isNew = true;
+                  newTitles.add(value);
+                }
               } else if (key.includes("링크") && value.startsWith("http")) {
                 contentHtml += `<a class="link-button" href="${value}" target="_blank">📰 뉴스 보기</a>`;
               } else {
@@ -122,8 +155,24 @@
             }
 
             card.innerHTML = headlineHtml + contentHtml;
+
+            if (isNew) {
+              const badge = document.createElement("div");
+              badge.className = "new-badge";
+              badge.textContent = "🔔 새로 들어왔어요!";
+              card.appendChild(badge);
+
+              // 1분 후 fade-out 후 제거
+              setTimeout(() => {
+                badge.classList.add("fade-out");
+                setTimeout(() => badge.remove(), 1000); // fade-out 완료 후 제거
+              }, 60000);
+            }
+
             container.appendChild(card);
           });
+
+          previousTitles = newTitles;
         }
       });
     }
