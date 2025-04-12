@@ -65,18 +65,20 @@
     .link-button {
       margin-top: 14px;
       padding: 10px 14px;
-      background: linear-gradient(135deg, #4c8dff, #2a6be0);
-      color: #fff;
+      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
       text-align: center;
       text-decoration: none;
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 14px;
       font-weight: bold;
       transition: background 0.2s ease;
     }
 
     .link-button:hover {
-      background: linear-gradient(135deg, #3a7be7, #1f5cd4);
+      background: rgba(255, 255, 255, 0.2);
     }
   </style>
 </head>
@@ -91,14 +93,14 @@
     async function loadNews() {
       const res = await fetch(SHEET_URL);
       const csvText = await res.text();
+      const container = document.getElementById("news");
+      container.innerHTML = "";
 
       Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          const data = results.data;
-          const container = document.getElementById("news");
-
+          const data = results.data; // 시트에 있는 순서 그대로 유지
           data.forEach(row => {
             const card = document.createElement("div");
             card.className = "news-card";
@@ -113,7 +115,7 @@
               if (key.includes("제목")) {
                 headlineHtml = `<div class="headline">${value}</div>`;
               } else if (key.includes("링크") && value.startsWith("http")) {
-                contentHtml += `<a class="link-button" href="${value}" target="_blank">🔗 링크 바로가기</a>`;
+                contentHtml += `<a class="link-button" href="${value}" target="_blank">📰 뉴스 보기</a>`;
               } else {
                 contentHtml += `<p><strong>${key}:</strong> ${value}</p>`;
               }
@@ -127,6 +129,7 @@
     }
 
     loadNews();
+    setInterval(loadNews, 60000); // 1분마다 자동 갱신
   </script>
 </body>
 </html>
