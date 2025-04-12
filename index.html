@@ -37,23 +37,12 @@
       justify-content: space-between;
     }
 
-    .news-card h3 {
-      font-size: 16px;
-      margin: 0 0 8px;
-      white-space: normal;
-      word-break: break-word;
-    }
-
     .news-card p {
       font-size: 14px;
       margin: 4px 0;
       color: #ccc;
-    }
-
-    .source {
-      font-size: 12px;
-      color: #888;
-      margin-top: 4px;
+      word-break: break-word;
+      white-space: pre-wrap;
     }
 
     .link-button {
@@ -84,23 +73,30 @@
     async function loadNews() {
       const res = await fetch(SHEET_URL);
       const text = await res.text();
-      const rows = text.trim().split("\n").map(r => r.split(","));
+      const rows = text.trim().split("\n").map(r => r.split(",").map(cell => cell.replace(/^"|"$/g, "")));
       const container = document.getElementById("news");
+
+      const headers = rows[0];
 
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
         if (row.length < 4 || !row[1]?.trim()) continue;
 
-        const [time, channel, title, url, stock] = row.map(cell => cell.replace(/^"|"$/g, ""));
-
         const card = document.createElement("div");
         card.className = "news-card";
-        card.innerHTML = `
-          <h3>${title}</h3>
-          <p>${stock || ""}</p>
-          <div class="source">${channel} · ${time}</div>
-          <a href="${url}" target="_blank" class="link-button">🔗 링크 바로가기</a>
-        `;
+
+        let contentHtml = "";
+        for (let j = 0; j < headers.length && j < row.length; j++) {
+          contentHtml += `<p><strong>${headers[j]}:</strong> ${row[j]}</p>`;
+        }
+
+        // 링크가 존재하고 유효한 경우 버튼 추가
+        const url = row[3];
+        if (url && url.startsWith("http")) {
+          contentHtml += `<a href="${url}" target="_blank" class="link-button">🔗 링크 바로가기</a>`;
+        }
+
+        card.innerHTML = contentHtml;
         container.appendChild(card);
       }
     }
