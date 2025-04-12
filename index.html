@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>디마니코 뉴스</title>
+  <title>디마니코 오늘 HOT 뉴스</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
-      background-color: #f9f9f9;
-      padding: 20px;
+      background-color: #f0f2f5;
+      padding: 24px;
     }
     h1 {
       text-align: center;
-      margin-bottom: 30px;
+      font-size: 28px;
+      margin-bottom: 20px;
     }
     .news-container {
       display: grid;
@@ -21,13 +22,13 @@
     }
     .news-card {
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 16px;
       padding: 16px;
-      transition: transform 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: 0.3s;
     }
     .news-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-6px);
     }
     .news-card img {
       width: 100%;
@@ -36,8 +37,8 @@
       border-radius: 8px;
     }
     .news-card h3 {
-      margin-top: 12px;
       font-size: 18px;
+      margin: 12px 0 6px;
     }
     .news-card p {
       font-size: 14px;
@@ -46,47 +47,46 @@
     .source {
       font-size: 12px;
       color: #888;
-      margin-top: 8px;
+      margin-top: 6px;
     }
   </style>
 </head>
 <body>
-  <h1>📰 디마니코 HOT 뉴스</h1>
+  <h1>🔥 오늘의 HOT 뉴스</h1>
   <div class="news-container" id="news"></div>
 
   <script>
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQgOePwNH5_v3vEvXTYlnA-5iEOsjYVoPXZAEYz_0RxJk0IfG8MCaAaYiYBhuCtdkMP6mfrq0vFzTWp/pub?gid=1064508082&single=true&output=tsv";
 
-    async function fetchSheetData() {
+    async function loadNews() {
       const res = await fetch(SHEET_URL);
       const text = await res.text();
-      const rows = text.trim().split("\n").map(row => row.split("\t"));
+      const rows = text.trim().split("\n").map(r => r.split("\t"));
+      const container = document.getElementById("news");
 
-      const newsList = document.getElementById("news");
       const headers = rows[0];
-
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
-        if (row.length < 4 || !row[1]?.trim()) continue; // 빈 줄 무시
+        if (row.length < 4 || !row[1]?.trim()) continue;
+
         const [time, channel, title, url, stock, img] = row;
+        const safeImg = img && img.startsWith("http") ? img : "https://via.placeholder.com/320x180?text=No+Image";
 
         const card = document.createElement("div");
         card.className = "news-card";
-
-        const safeImg = img && img.startsWith("http") ? img : "https://via.placeholder.com/320x180?text=No+Image";
         card.innerHTML = `
-          <a href="${url}" target="_blank" style="text-decoration: none; color: inherit;">
-            <img src="${safeImg}" alt="뉴스 이미지">
+          <a href="${url}" target="_blank" style="text-decoration:none; color:inherit;">
+            <img src="${safeImg}" alt="뉴스 이미지" />
             <h3>${title}</h3>
             <p>${stock || ""}</p>
             <div class="source">${channel} · ${time}</div>
           </a>
         `;
-        newsList.appendChild(card);
+        container.appendChild(card);
       }
     }
 
-    fetchSheetData();
+    loadNews();
   </script>
 </body>
 </html>
