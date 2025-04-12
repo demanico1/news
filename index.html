@@ -22,9 +22,10 @@
     }
 
     .news-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      display: flex;
+      flex-wrap: wrap;
       gap: 20px;
+      justify-content: center;
     }
 
     .news-card {
@@ -34,7 +35,9 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      max-width: 360px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .news-card p {
@@ -42,7 +45,14 @@
       margin: 4px 0;
       color: #ccc;
       word-break: break-word;
-      white-space: pre-wrap;
+      white-space: pre-line;
+    }
+
+    .news-card .headline {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 6px 0;
+      color: #ffffff;
     }
 
     .link-button {
@@ -87,13 +97,16 @@
 
         let contentHtml = "";
         for (let j = 0; j < headers.length && j < row.length; j++) {
-          contentHtml += `<p><strong>${headers[j]}:</strong> ${row[j]}</p>`;
-        }
+          const key = headers[j];
+          const value = row[j];
 
-        // 링크가 존재하고 유효한 경우 버튼 추가
-        const url = row[3];
-        if (url && url.startsWith("http")) {
-          contentHtml += `<a href="${url}" target="_blank" class="link-button">🔗 링크 바로가기</a>`;
+          if (key.includes("제목")) {
+            contentHtml += `<div class="headline">${value}</div>`;
+          } else if (key.includes("링크") && value.startsWith("http")) {
+            contentHtml += `<a class="link-button" href="${value}" target="_blank">🔗 링크 바로가기</a>`;
+          } else {
+            contentHtml += `<p><strong>${key}:</strong> ${value}</p>`;
+          }
         }
 
         card.innerHTML = contentHtml;
