@@ -48,7 +48,7 @@
     }
 
     .headline {
-      font-size: 18px;
+      font-size: 22px; /* 기존 18px → 확대 */
       font-weight: 800;
       margin-bottom: 12px;
       line-height: 1.7;
@@ -180,7 +180,7 @@
               const linkButton = document.createElement("a");
               linkButton.className = "link-button";
               linkButton.innerText = "📰 뉴스 보기";
-              linkButton.href = linkUrl; // 현재 창에서 이동
+              linkButton.href = linkUrl;
               card.appendChild(linkButton);
             }
 
