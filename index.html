@@ -35,7 +35,7 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
       display: flex;
       flex-direction: column;
-      max-width: 360px;
+      max-width: 440px;
       width: 100%;
       box-sizing: border-box;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -51,10 +51,15 @@
       font-size: 18px;
       font-weight: 800;
       background: #000000;
-      padding: 10px 12px;
+      padding: 16px 16px;
       border-radius: 10px;
       margin-bottom: 12px;
-      line-height: 1.5;
+      line-height: 1.7;
+      word-break: keep-all;
+      white-space: normal;
+      width: 100%;
+      box-sizing: border-box;
+      display: block;
       transition: transform 0.2s ease, background 0.2s ease;
     }
 
@@ -89,44 +94,6 @@
 
     .link-button:hover {
       background: rgba(255, 255, 255, 0.2);
-    }
-
-    .preview-box {
-      display: none;
-      margin-top: 12px;
-      background: #1f1f1f;
-      border: 1px solid #333;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .og-preview {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding: 12px;
-    }
-
-    .og-preview img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-    }
-
-    .og-preview h3 {
-      font-size: 16px;
-      margin: 6px 0 2px;
-    }
-
-    .og-preview p {
-      font-size: 14px;
-      color: #aaa;
-    }
-
-    .og-preview a {
-      font-size: 13px;
-      color: #4da6ff;
-      text-decoration: underline;
     }
 
     .new-badge {
@@ -175,23 +142,6 @@
       return t;
     }
 
-    function toggleOGPreview(el, url) {
-      const preview = el.nextElementSibling;
-      if (preview.style.display === "none") {
-        preview.innerHTML = `
-          <div class="og-preview">
-            <img src="https://via.placeholder.com/320x160.png?text=뉴스+미리보기" alt="Preview image">
-            <h3>제목이 여기에 들어갑니다</h3>
-            <p>이 뉴스는 최근 시장에 영향을 준 주요 이슈를 다루고 있습니다.</p>
-            <a href="${url}" target="_blank" rel="noopener noreferrer">원문 보기 →</a>
-          </div>`;
-        preview.style.display = "block";
-      } else {
-        preview.innerHTML = "";
-        preview.style.display = "none";
-      }
-    }
-
     async function loadNews() {
       const res = await fetch(SHEET_URL);
       const csvText = await res.text();
@@ -213,7 +163,6 @@
             let contentHtml = "";
             let isNew = false;
             let firstTimeStr = "";
-            let linkUrl = "";
 
             for (let key in row) {
               const value = row[key].trim();
@@ -229,24 +178,13 @@
                 firstTimeStr = value;
                 contentHtml += `<p><strong>${key}:</strong> ${value}</p>`;
               } else if (key.includes("링크") && value.startsWith("http")) {
-                linkUrl = value;
+                contentHtml += `<a class="link-button" href="${value}" target="_blank">📰 뉴스 보기</a>`;
               } else {
                 contentHtml += `<p><strong>${key}:</strong> ${value}</p>`;
               }
             }
 
             card.innerHTML = headlineHtml + contentHtml;
-            if (linkUrl) {
-              const linkButton = document.createElement("div");
-              linkButton.className = "link-button";
-              linkButton.innerText = "📰 뉴스 보기";
-              linkButton.onclick = () => toggleOGPreview(linkButton, linkUrl);
-              card.appendChild(linkButton);
-
-              const previewBox = document.createElement("div");
-              previewBox.className = "preview-box";
-              card.appendChild(previewBox);
-            }
 
             const firstTime = parseTime(firstTimeStr);
             const now = new Date();
