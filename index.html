@@ -96,6 +96,37 @@
       background: rgba(255, 255, 255, 0.2);
     }
 
+    .preview-box {
+      display: none;
+      margin-top: 12px;
+      background: #1f1f1f;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .og-preview img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .og-preview h3 {
+      font-size: 16px;
+      margin: 6px 0 2px;
+    }
+
+    .og-preview p {
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    .og-preview a {
+      font-size: 13px;
+      color: #4da6ff;
+      text-decoration: underline;
+    }
+
     .new-badge {
       position: absolute;
       top: -12px;
@@ -142,6 +173,23 @@
       return t;
     }
 
+    function togglePreview(el, url) {
+      const preview = el.nextElementSibling;
+      if (preview.style.display === "none") {
+        preview.innerHTML = `
+          <div class="og-preview">
+            <img src="https://via.placeholder.com/320x160.png?text=뉴스+미리보기" alt="Preview image">
+            <h3>삼성전자, AI 옥외광고 확대</h3>
+            <p>이 뉴스는 AI 기술이 적용된 마케팅 전략을 소개하며...</p>
+            <a href="${url}" target="_blank">원문 보기 →</a>
+          </div>`;
+        preview.style.display = "block";
+      } else {
+        preview.innerHTML = "";
+        preview.style.display = "none";
+      }
+    }
+
     async function loadNews() {
       const res = await fetch(SHEET_URL);
       const csvText = await res.text();
@@ -163,6 +211,7 @@
             let contentHtml = "";
             let isNew = false;
             let firstTimeStr = "";
+            let linkUrl = "";
 
             for (let key in row) {
               const value = row[key].trim();
@@ -178,13 +227,24 @@
                 firstTimeStr = value;
                 contentHtml += `<p><strong>${key}:</strong> ${value}</p>`;
               } else if (key.includes("링크") && value.startsWith("http")) {
-                contentHtml += `<a class="link-button" href="${value}" target="_blank">📰 뉴스 보기</a>`;
+                linkUrl = value;
               } else {
                 contentHtml += `<p><strong>${key}:</strong> ${value}</p>`;
               }
             }
 
             card.innerHTML = headlineHtml + contentHtml;
+            if (linkUrl) {
+              const linkButton = document.createElement("div");
+              linkButton.className = "link-button";
+              linkButton.innerText = "📰 뉴스 보기";
+              linkButton.onclick = () => togglePreview(linkButton, linkUrl);
+              card.appendChild(linkButton);
+
+              const previewBox = document.createElement("div");
+              previewBox.className = "preview-box";
+              card.appendChild(previewBox);
+            }
 
             const firstTime = parseTime(firstTimeStr);
             const now = new Date();
